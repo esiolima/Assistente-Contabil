@@ -7,39 +7,43 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+const PROJECT_ID = 'charismatic-web-403017';
+const LOCATION = 'southamerica-east1';
+
+const MODEL_ENDPOINT = `https://${LOCATION}-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/${LOCATION}/publishers/google/models/gemini-2.5-flash-lite:predict`;
+
 app.post('/whatsapp', async (req, res) => {
   const userMessage = req.body.Body || '';
 
   try {
-    const response = await fetch('https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-lite:predict', {
+    const response = await fetch(MODEL_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer AQ.Ab8RN6Kznq78YiRm_0grcId__qw4AnOycmgncoEqPzyq_RJAMQ'
+        'Authorization': 'Bearer AQ.Ab8RN6Kznq78YiRm_0grcId__qw4AnOycmgncoEqPzyq_RJAMQ' // Use sua chave válida aqui
       },
       body: JSON.stringify({
-        instances: [
-          {
-            content: {
-              text: userMessage
+        prompt: {
+          messages: [
+            {
+              author: "user",
+              content: {
+                text: userMessage
+              }
             }
-          }
-        ],
-        parameters: {
-          temperature: 0.2
+          ]
         }
       })
     });
 
     const data = await response.json();
-
     console.log('Resposta da API Gemini:', JSON.stringify(data, null, 2));
 
     let assistantReply = "Desculpe, não consegui entender.";
-    if (data && data.predictions && data.predictions.length > 0) {
-      const prediction = data.predictions[0];
-      if (prediction.generatedText) {
-        assistantReply = prediction.generatedText;
+    if (data && data.candidates && data.candidates.length > 0) {
+      const textParts = data.candidates[0].message.content.text;
+      if (textParts) {
+        assistantReply = textParts;
       }
     }
 
