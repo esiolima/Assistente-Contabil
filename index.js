@@ -8,10 +8,11 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 app.post('/whatsapp', async (req, res) => {
+  console.log('Recebida mensagem do WhatsApp:', req.body.Body);
+
   const userMessage = req.body.Body || '';
 
   try {
-    // Requisição à API do Gemini 2.5 Flash-Lite (endpoint predict)
     const response = await fetch('https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-lite:predict', {
       method: 'POST',
       headers: {
@@ -31,6 +32,7 @@ app.post('/whatsapp', async (req, res) => {
     });
 
     const data = await response.json();
+    console.log('Resposta da API Gemini:', JSON.stringify(data, null, 2));
 
     let assistantReply = "Desculpe, não consegui entender.";
     if (data && data.candidates && data.candidates.length > 0) {
